@@ -1,0 +1,1 @@
+insert into `db_julian`. `tbl_nomes`(`nome`) values ('Adriana');
