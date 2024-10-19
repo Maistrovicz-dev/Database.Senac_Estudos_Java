@@ -1,80 +1,95 @@
+
 import java.awt.*;
 import java.awt.event.*;
 import java.sql.*;
-import javax.swing.*; 
+import javax.swing.*;
 
-public class TelaDeLogin extends JFrame 
-{
- private final JLabel LblLogin;
- private final JTextField textLogin;
- private final JLabel LblSenha;
- private final JPasswordField textSenha;
- private final JButton btnLogar;
- private final JLabel lblNotificacoes;
+public class TelaDeLogin extends JFrame {
+    private final JLabel lblLogin;
+    private final JTextField txtLogin;
+    private final JLabel lblSenha;
+    private final JPasswordField txtSenha;
+    private final JButton btnLogar;
+    private final JLabel lblNotificacoes;
 
- public TelaDeLogin()
- {
- setLayout(new FlowLayout());
+    public TelaDeLogin() {
+        super("Tel de Login");
+        setLayout(new FlowLayout());
 
- LblLogin = new JLabel("Login");
- add(LblLogin);
+        lblLogin = new JLabel("Login:");
+        add(lblLogin);
 
- textLogin = new JTextField(10);
- add(textLogin);
+        txtLogin = new JTextField(10);
+        add(txtLogin);
 
- LblSenha = new JLabel("Senha");
- add(LblSenha);
+        lblSenha = new JLabel("Senha:");
+        add(lblSenha);
 
- textSenha = new JPasswordField(10);
- add(textSenha);
+        txtSenha = new JPasswordField(10);
+        add(txtSenha);
 
- btnLogar = new JButton("Logar");
- add(btnLogar);
+        btnLogar = new JButton("Logar");
+        add(btnLogar);
 
- lblNotificacoes = new JLabel("Notificações");
- add(lblNotificacoes);
+        lblNotificacoes = new JLabel("Notificações");
+        add(lblNotificacoes);
 
- ButtonHandler buttonHandler = new ButtonHandler();
- btnLogar. addActionListener(buttonHandler);
+        ButtonHandler buttonHandler = new ButtonHandler();
+        btnLogar.addActionListener(buttonHandler);
 
- }
-
- private class ButtonHandler implements ActionListener 
- {
-    @Override
-    public void actionPerformed (ActionEvent event)
-    {
-      try{
-        Connection conexao = MySQLConnector.conectar();
-        String strSqlLogin = "select * from `db_senac`.`tbl_senac` where email = '"+textLogin.getText() + "' and senha = '" + String.valueOf(textSenha.getPassword()) +"';";
-        Statement stmSqllogin = conexao.createStatement();
-        ResultSet rstSqlLogin = stmSqllogin.executeQuery(strSqlLogin) ;
-        if (rstSqlLogin.next()) {
-            lblNotificacoes.setText("Login estabelecido!");
-        
-          } 
-          else 
-            {
-               lblNotificacoes.setText("Não foi possivel encontrar o login e/ou senha digitados. Por favor, verifique e tente novamente.");
-
+        txtSenha.addKeyListener(
+            new KeyAdapter() {
+                @Override
+                public void keyReleased(KeyEvent e) {
+                    if (String.valueOf(txtSenha.getPassword()).trim().length() > 0) {
+                        if (e.getKeyCode() == 10) {
+                            System.out.println("Você teclou Enter");
+                            logar();
+                        }
+                    }
+                }
             }
-
-      } catch (Exception e){
-        lblNotificacoes.setText("Houve um problema e não será possivel realizar o login neste momento. Por favor, tente novamente maus tarde.");
-        System.err.println("erro"+e);
-      }
-      
+        );
     }
-  }
 
- public static void main (String[] args) 
- {
- TelaDeLogin appTelaDeLogin = new TelaDeLogin();
+    private class ButtonHandler implements ActionListener {
+        @Override
+        public void actionPerformed(ActionEvent event) {
+            logar();
+        }
+    }
 
- appTelaDeLogin.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
- appTelaDeLogin.setSize(600, 140);
- appTelaDeLogin.setVisible(true);
- 
- }
+    public void logar() {
+        try {
+            Connection conexao = MySQLConnector.conectar();
+            String strSqlLogin = "select * from `db_senac`.`tbl_senac` where email = '" + txtLogin.getText() + "' and senha = '" + String.valueOf(txtSenha.getPassword()) + "';";
+            Statement stmSqlLogin = conexao.createStatement();
+            ResultSet rstSqlLogin = stmSqlLogin.executeQuery(strSqlLogin);
+            if (rstSqlLogin.next()) {
+                notificarUsuario("Login estabelecido.");
+                
+            } else {
+                notificarUsuario("Não foi possível encontrar o login e/ou senha digitados. Por favor, verifique e tente novamente.");
+                
+            }
+        } catch (Exception e) {
+            notificarUsuario("Houve um problema e não será possível realizar o login neste momento. Por favor, tente novamente mais tarde.");
+            System.err.println("Ops! Errrrrrrrou: " + e);
+        }
+    }
+
+    public String setHtmlFormat(String txt) {
+        return "<html><body>" + txt + "</body></html>";
+    }
+
+    public void notificarUsuario(String strTexto) {
+        lblNotificacoes.setText(setHtmlFormat(strTexto));
+    }
+
+    public static void main(String[] args) {
+        TelaDeLogin appTelaDeLogin = new TelaDeLogin();
+        appTelaDeLogin.setDefaultCloseOperation(EXIT_ON_CLOSE);
+        appTelaDeLogin.setSize(600,150);
+        appTelaDeLogin.setVisible(true);
+    }
 }
-
